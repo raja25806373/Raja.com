@@ -1,0 +1,85 @@
+import pygame
+import random
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Happy New Year 2025!")
+
+# Clock for controlling frame rate
+clock = pygame.time.Clock()
+
+# Colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+TEXT_COLOR = (255, 215, 0)  # Gold
+
+# Fonts
+font = pygame.font.SysFont("Arial", 64)
+small_font = pygame.font.SysFont("Arial", 24)
+
+# Particle class
+class Particle:
+    def init(self, x, y):
+        self.x = x
+        self.y = y
+        self.radius = random.randint(3, 7)
+        self.color = [random.randint(100, 255), random.randint(100, 255), random.randint(100, 255)]
+        self.velocity = [random.uniform(-2, 2), random.uniform(-2, 2)]
+        self.lifetime = random.randint(60, 100)
+
+    def update(self):
+        self.x += self.velocity[0]
+        self.y += self.velocity[1]
+        self.lifetime -= 1
+        self.color[0] = max(self.color[0] - 2, 0)  # Fade red
+        self.color[1] = max(self.color[1] - 2, 0)  # Fade green
+        self.color[2] = max(self.color[2] - 2, 0)  # Fade blue
+
+    def draw(self, surface):
+        pygame.draw.circle(surface, tuple(self.color), (int(self.x), int(self.y)), self.radius)
+
+# Particle system
+particles = []
+
+# Main loop
+running = True
+while running:
+    screen.fill(BLACK)
+
+    # Display "Happy New Year 2025"
+    text_surface = font.render("Happy New Year 2025!", True, TEXT_COLOR)
+    screen.blit(text_surface, (WIDTH // 2 - text_surface.get_width() // 2, HEIGHT // 4))
+
+    # Display instructions
+    instruction_surface = small_font.render("Click to celebrate!", True, WHITE)
+    screen.blit(instruction_surface, (WIDTH // 2 - instruction_surface.get_width() // 2, HEIGHT - 50))
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Create new particles at the mouse position
+    if pygame.mouse.get_pressed()[0]:  # Left mouse button
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        for _ in range(5):  # Number of particles per frame
+            particles.append(Particle(mouse_x, mouse_y))
+
+    # Update and draw particles
+    for particle in particles[:]:
+        particle.update()
+        particle.draw(screen)
+        if particle.lifetime <= 0:  # Remove dead particles
+            particles.remove(particle)
+
+    # Refresh display
+    pygame.display.flip()
+    clock.tick(60)
+
+# Quit Pygame
+pygame.quit()
+sys.exit()
